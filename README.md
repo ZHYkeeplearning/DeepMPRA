@@ -1,36 +1,35 @@
 # DeepMPRA
-Method for Risk Assessment of Microplastics
 
-**Problem addressed**
+Microplastic risk assessment method
 
-Current ecological risk assessment of microplastics in lakes relies primarily on linear index systems, which require manually defined background values and assume that risk factors—such as abundance, particle size, and polymer type—combine in a purely additive, linear manner. This linear assumption neglects the complex nonlinear interactions among these factors and can easily lead to unreasonable characterizations of true risk patterns. DeepMPRA learns risk thresholds entirely from data without the need for preset background values, captures the authentic risk structure through nonlinear modeling, and thereby effectively corrects the assessment biases inherent in conventional approaches.
+## Problem addressed
 
-**Highlights**
+Current ecological risk assessment of microplastics in lakes mainly relies on linear index systems. These systems require manually set background values and assume that risk factors, such as abundance, particle size, and polymer type, interact in a purely additive and linear manner. This linear assumption ignores the complex nonlinear interactions among factors and can easily lead to an unreasonable representation of the actual risk pattern. DeepMPRA learns risk thresholds entirely from data, without preset background concentrations, and uses nonlinear modeling to capture the true risk structure, thereby effectively correcting the assessment bias inherent in conventional methods.
 
-- **Threshold-free and background-value-free**  
-  Entirely data-driven, requiring no manual delineation of risk-level boundaries or preset background concentrations.
+## Highlights
 
-- **Nonlinear risk modeling**  
-  Employs an autoencoder to extract nonlinear interactions among microplastic features and, based on unsupervised clustering, defines relative risk according to the degree to which a sample deviates from a “low-risk reference state,” rather than computing an absolute risk index.
+* **No thresholds and no background values**
 
-**Usage notes**
+Fully data driven, with no need to manually define risk level boundaries or set preset background concentrations.
 
-*Data requirements*  
-The dataset must contain the columns `abundance` and `MDII`.  
-The categorical attributes of microplastics (shape, size, type, color) need not be restricted to the categories present in the example dataset (e.g., fragment, film, fiber, pellet, Foam, Others). You may classify them according to your own primary classification scheme. Any categories that do not belong to the main classification should be grouped into “Others,” and it must be ensured that, for each sample point, the proportions of all categories within a given attribute sum to 100%. The same principle applies to size, type, and color.
+* **Nonlinear risk modeling**
 
-*Core function descriptions*  
+Uses an autoencoder to extract nonlinear interactions among microplastic features. Based on unsupervised clustering, it defines relative risk according to how far a sample deviates from a low risk reference state, rather than calculating an absolute risk index.
 
-- **`GANAugmentor`** – Performs GAN-based data augmentation on categorical features of microplastics such as shape, size, type, and color. Note: After augmentation, MDII must be recalculated using the original formula; the MDII values generated directly by the GAN must not be used.  
-- **`ContinuousGANAugmentor`** – Performs GAN-based data augmentation on microplastic abundance.  
-- **`load_and_prepare_data`** – Loads data and constructs the feature matrix (does not perform training/test splitting).  
-- **`train_autoencoder`** – Trains the autoencoder and extracts latent representations of the samples.  
-- **`compute_risk_direction`** – Uses PCA to determine the direction of the risk attribute and computes the projection of each sample onto that direction.  
-- **`process_abundance_and_scale`** – Preprocesses and scales abundance and microplastic risk features.  
-- **`identify_healthy_cluster`** – Uses K‑means clustering to identify healthy (low‑risk) sample clusters.  
-- **`fit_gmm_and_compute_distances`** – Fits a Gaussian Mixture Model (GMM) to the low‑risk samples and computes weighted distances and log‑probabilities for every sample.  
-- **`assign_risk_levels`** – Assigns microplastic risk levels to samples based on the computed distances and probabilities.  
-- **`build_result_dataframe`** – Constructs a DataFrame containing the final assessment results.  
-- **`predict_test_set`** – Applies the trained model to perform risk assessment on an independent test set.  
+## Usage instructions
 
-**Important:** Before using this assessment framework, you must partition your data into training and test sets yourself; `load_and_prepare_data` does not perform this split automatically.
+### Data requirements
+
+The dataset must contain the columns `abundance` and `MDII`.
+
+The categorical attributes of microplastics (shape, size, type, and color) do not need to be limited to the categories listed in the example dataset (such as fragment, film, fiber, pellet, foam, and other). You can classify these attributes according to your own primary classification scheme. Any category that does not belong to the primary classification should be placed in the "other" category. For each sample, the proportions of all categories within a given attribute must sum to 100%. This principle also applies to size, type, and color.
+
+The dataset provided in this repository was imputed using only the mean values reported in the article. If a more complete dataset is needed, you can use missForest for multiple imputation, or you can use other imputation methods to fill missing values.
+
+### Core function descriptions
+
+1. `dataset_split.ipynb` splits the dataset into training and test sets to prevent data leakage in downstream microplastic risk analyses.
+
+2. `data_augmentation.ipynb` uses GAN to augment the data. Note: after augmentation, MDII must be recalculated using the original formula. MDII values generated directly by the generative adversarial network (GAN) must not be used.
+
+3. `microplastic_risk_assessment.ipynb` contains the microplastic risk assessment pipeline. It includes training an autoencoder and extracting latent representations of samples, using principal component analysis (PCA) to determine the direction of the risk attribute and calculating the projection of each sample onto that direction, preprocessing and normalizing abundance and microplastic risk features, using K means clustering to identify healthy (low risk) sample clusters, and fitting a Gaussian mixture model (GMM) to the low risk samples and calculating the weighted distance and log probability for each sample.
